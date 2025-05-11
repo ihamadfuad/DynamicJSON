@@ -19,24 +19,33 @@ public enum DynamicJSON: Decodable {
     
     public init(from decoder: Decoder) throws {
         if let container = try? decoder.container(keyedBy: DynamicCodingKeys.self) {
-            var dict: [String: DynamicJSON] = [:]
-            for key in container.allKeys {
+            let dict = try container.allKeys.reduce(into: [String: DynamicJSON]()) { result, key in
                 let normalized = key.stringValue.normalizedKey()
-                dict[normalized] = try container.decode(DynamicJSON.self, forKey: key)
+                result[normalized] = try container.decode(DynamicJSON.self, forKey: key)
             }
             self = .dictionary(dict)
-        } else if var arrayContainer = try? decoder.unkeyedContainer() {
+            return
+        }
+        
+        if var arrayContainer = try? decoder.unkeyedContainer() {
             var arr: [DynamicJSON] = []
             while !arrayContainer.isAtEnd {
-                arr.append(try arrayContainer.decode(DynamicJSON.self))
+                if let value = try? arrayContainer.decode(DynamicJSON.self) {
+                    arr.append(value)
+                }
             }
             self = .array(arr)
-        } else if let val = try? decoder.singleValueContainer().decode(Bool.self) {
-            self = .bool(val)
-        } else if let val = try? decoder.singleValueContainer().decode(Double.self) {
-            self = .number(val)
-        } else if let val = try? decoder.singleValueContainer().decode(String.self) {
-            self = .string(val)
+            return
+        }
+        
+        let container = try decoder.singleValueContainer()
+        
+        if let boolVal = try? container.decode(Bool.self) {
+            self = .bool(boolVal)
+        } else if let numVal = try? container.decode(Double.self) {
+            self = .number(numVal)
+        } else if let strVal = try? container.decode(String.self) {
+            self = .string(strVal)
         } else {
             self = .null
         }
@@ -70,7 +79,7 @@ public enum DynamicJSON: Decodable {
         switch self {
         case .bool(let val): return val
         case .number(let num): return num != 0
-        case .string(let str): return ["1", "true", "yes", "on"].contains(str.lowercased())
+        case .string(let str): return ["1", "true", "yes", "on", "enabled", "active", "authorized", "valid"].contains(str.lowercased())
         default: return nil
         }
     }

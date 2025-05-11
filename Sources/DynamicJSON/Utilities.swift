@@ -24,11 +24,16 @@ extension String {
     ///
     /// Returns: A normalized version of the string for consistent lookup.
     func normalizedKey() -> String {
-        let pattern = #"(?<=[a-z0-9])(?=[A-Z])|[_\-\s]+"#
+        // Replace hyphens and spaces with underscores for consistent splitting
+        let sanitized = self
+            .replacingOccurrences(of: "-", with: "_")
+            .replacingOccurrences(of: " ", with: "_")
+        
+        let pattern = #"(?<=[a-z0-9])(?=[A-Z])|_"#
         let regex = try! NSRegularExpression(pattern: pattern, options: [])
         
-        let range = NSRange(startIndex..<endIndex, in: self)
-        let spaced = regex.stringByReplacingMatches(in: self, options: [], range: range, withTemplate: "_")
+        let range = NSRange(sanitized.startIndex..<sanitized.endIndex, in: sanitized)
+        let spaced = regex.stringByReplacingMatches(in: sanitized, options: [], range: range, withTemplate: "_")
         
         return spaced
             .split(separator: "_")
@@ -48,25 +53,27 @@ extension String {
     func levenshteinDistance(to target: String) -> Int {
         let source = Array(self)
         let target = Array(target)
-        let (m, n) = (source.count, target.count)
         
-        var matrix = Array(repeating: Array(repeating: 0, count: n + 1), count: m + 1)
+        guard !source.isEmpty else { return target.count }
+        guard !target.isEmpty else { return source.count }
         
-        for i in 0...m { matrix[i][0] = i }
-        for j in 0...n { matrix[0][j] = j }
+        var previous = Array(0...target.count)
+        var current = [Int](repeating: 0, count: target.count + 1)
         
-        for i in 1...m {
-            for j in 1...n {
+        for i in 1...source.count {
+            current[0] = i
+            for j in 1...target.count {
                 let cost = source[i - 1] == target[j - 1] ? 0 : 1
-                matrix[i][j] = Swift.min(
-                    matrix[i - 1][j] + 1,
-                    matrix[i][j - 1] + 1,
-                    matrix[i - 1][j - 1] + cost
+                current[j] = Swift.min(
+                    current[j - 1] + 1,      // insertion
+                    previous[j] + 1,         // deletion
+                    previous[j - 1] + cost   // substitution
                 )
             }
+            swap(&previous, &current)
         }
         
-        return matrix[m][n]
+        return previous[target.count]
     }
 }
 
@@ -85,19 +92,29 @@ extension Dictionary where Key == String, Value == DynamicJSON {
     func fuzzyMatch(for key: String, logMatch: (_ original: String, _ matched: String) -> Void) -> DynamicJSON? {
         let normalized = key.normalizedKey()
         
+        // Try partial match
         if let partial = self.first(where: { $0.key.contains(normalized) }) {
             logMatch(key, partial.key)
             return partial.value
         }
         
+        // Fuzzy match
         let maxDistance = 2
-        let best = self.map { ($0.key, $0.value, normalized.levenshteinDistance(to: $0.key)) }
-            .filter { $0.2 <= maxDistance }
-            .sorted(by: { $0.2 < $1.2 })
-            .first
+        var bestMatchKey: String?
+        var bestMatchValue: DynamicJSON?
+        var bestDistance = Int.max
         
-        if let (matchKey, value, _) = best {
-            logMatch(key, matchKey)
+        for (storedKey, value) in self {
+            let distance = normalized.levenshteinDistance(to: storedKey)
+            if distance <= maxDistance && distance < bestDistance {
+                bestDistance = distance
+                bestMatchKey = storedKey
+                bestMatchValue = value
+            }
+        }
+        
+        if let key = bestMatchKey, let value = bestMatchValue {
+            logMatch(key, key)
             return value
         }
         

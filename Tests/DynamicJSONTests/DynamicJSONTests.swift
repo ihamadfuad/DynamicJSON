@@ -1,10 +1,11 @@
 import Testing
+import XCTest
 import Foundation
 @testable import DynamicJSON
 
-final class DynamicFeatureFlagTests {
+final class DynamicFeatureFlagTests: XCTestCase {
     
-    @Test func testDynamicJSON() throws {
+    func testDynamicJSON() throws {
         let json = """
         {
             "createdAt": "2025-11-15T10:00:00Z",
@@ -75,6 +76,36 @@ final class DynamicFeatureFlagTests {
         #expect(dynamicJSONModel.flags["new-ui"].bool == true)     // hyphen
         #expect(dynamicJSONModel.flags["new ui"].bool == true)     // space
         #expect(dynamicJSONModel.flags.beta_feature.bool == false)        // normalized
+    }
+    
+    func testBenchmarkDynamicJSONPerformance() throws {
+        
+        let decoder = JSONDecoder()
+        // Simulate a moderately large JSON
+        let jsonString = (0..<1000).map {
+            """
+            "feature_\($0)": {
+                "enabled": \($0 % 2 == 0),
+                "rollout": "\($0 % 100)"
+            }
+            """
+        }.joined(separator: ",\n")
+        
+        let wrapped = "{ \(jsonString) }"
+        guard let data = wrapped.data(using: .utf8) else {
+            return
+        }
+        
+        // Run benchmark
+        measure {
+            let decoded = try? decoder.decode(DynamicJSON.self, from: data)
+            #expect(decoded != nil)
+            
+            // Test accessing and converting various keys
+            let sampleKey = "feature_123"
+            let value = decoded?[sampleKey].dictionary?["enabled"]?.bool
+            #expect(value != nil)
+        }
     }
 }
 
