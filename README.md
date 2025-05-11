@@ -177,7 +177,7 @@ Supports:
 •    01-01-2024
 •    UNIX timestamp & with milisoconds: 1704067200 or 1704067200000
  
-## 🔬 API
+## 🔬 More in depth
 
 Accessors
 
@@ -197,11 +197,60 @@ json.dictionary → [String: DynamicJSON]?
 json.isNull → Bool
 ```
 
-## 🧪 Testing
 
-Includes a full real-world test case covering:
-•    All primitive types
-•    Arrays and nested keys
-•    Date strings and timestamps
-•    Fuzzy and normalized keys
-•    Null and missing key handling
+---
+
+## 🎯 Frequently Asked Questions
+
+### ❓ What happens if a key is missing?
+You’ll get `.null` back. You can check using `json["key"].isNull` or safely unwrap optional values.
+
+---
+
+### ❓ Will this crash if the JSON is malformed?
+No. If decoding fails, it throws like any regular `Decodable` type. Accessing values afterward will never crash — you’ll just get `nil` or `.null`.
+
+---
+
+### ❓ Does it work with nested objects and arrays?
+Yes. You can drill down using dot-paths (`json["user.settings.notifications"]`) or dynamic members (`json.user.settings.notifications`).
+
+---
+
+### ❓ Can I use it alongside regular `Codable` structs?
+Absolutely. Use `DynamicJSON` for dynamic/unknown parts of the payload, and `Codable` for strict parts.
+
+---
+
+### ❓ What date formats are supported?
+Out of the box:
+- ISO8601
+- RFC3339 with milliseconds
+- MySQL datetime (`yyyy-MM-dd HH:mm:ss`)
+- Short format (`yyyy-MM-dd`)
+- Timestamps in seconds and milliseconds
+
+---
+
+### ❓ How is it different from `[String: Any]`?
+Unlike `[String: Any]`, `DynamicJSON` is type-safe, supports dot access, fuzzy keys, smart casting, and works with Swift’s `Decodable`.
+
+---
+
+### ❓ Can I use this in production apps?
+Yes — it's designed to be resilient, readable, and production-safe.
+
+---
+
+### ❓ Will this impact performance?
+Key normalization and fuzzy matching are optimized and fast for typical payloads. If needed, you can disable fuzzy matching in future versions.
+
+---
+
+### ❓ What Swift versions are supported?
+Swift 5.9 and later (uses modern `Decodable` patterns and dynamic member lookup).
+
+---
+
+### ❓ Is this tested?
+Yes — it includes extensive tests for decoding, type coercion, fuzzy keys, date formats, and more.
