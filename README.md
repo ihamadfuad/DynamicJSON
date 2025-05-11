@@ -7,6 +7,43 @@ configuration files, feature flags, and analytics payloads.
 
 ---
 
+## 🔁 Before vs After Using DynamicJSON
+
+### ❌ Before (Vanilla Decoding)
+
+```swift
+struct Raw: Decodable {
+    let feature_toggle: String?
+    let darkMode: String?
+}
+
+let decoded = try? JSONDecoder().decode(Raw.self, from: jsonData)
+
+let isEnabled = decoded?.feature_toggle == "true"
+let isDark = decoded?.darkMode == "on"
+```
+
+- You need to define intermediate models
+- Compare strings manually
+- Deal with missing keys and nils everywhere
+
+---
+
+### ✅ After (Using DynamicJSON)
+
+```swift
+let json = try JSONDecoder().decode(DynamicJSON.self, from: jsonData)
+
+let isEnabled = json.featureToggle.bool
+let isDark = json.darkMode.bool
+```
+
+- No need for models
+- One-line type-safe checks
+- Supports formats like `"yes"`, `"on"`, `"1"`, and more
+
+---
+
 ## ✨ Why DynamicJSON?
 
 Working with JSON in Swift can be painful — especially when the structure is inconsistent, 
@@ -117,6 +154,8 @@ do {
     print("Failed to decode JSON: \(error)")
 }
 ```
+
+---
 
 ## 🧠 Smart Key Matching
 
