@@ -90,7 +90,7 @@ in other words, you ask for what you want, and it finds it — no matter how the
 ## 📦 Installation
 
 ```swift
-.package(url: "https://github.com/ihamadfouad/DynamicJSON-SDK.git", from: "1.0.0")
+.package(url: "https://github.com/ihamadfuad/DynamicJSON.git", from: "1.0.0")
 
 import DynamicJSON
 
