@@ -84,9 +84,54 @@ final class DynamicFeatureFlagTests: XCTestCase {
         // Simulate a moderately large JSON
         let jsonString = (0..<1000).map {
             """
-            "feature_\($0)": {
-                "enabled": \($0 % 2 == 0),
-                "rollout": "\($0 % 100)"
+            "feature_\($0)":
+            {
+                "createdAt": "2025-11-15T10:00:00Z",
+                "updatedAt": 1640995200000,
+                "userType": "premium",
+                "isPremiumUser": "1",
+                "featureToggle": true,
+                "maxItems": "25",
+                "discountRate": "\($0 % 100)",
+                "notificationsEnabled": "yes",
+                "settings": {
+                    "darkMode": "on",
+                    "notifications": {
+                        "email": \($0 % 2 == 0),
+                        "push": "false"
+                    }
+                },
+                "versions": [1, "2", 3.5],
+                "flags": {
+                    "beta_feature": false,
+                    "new_ui": "true",
+                    "launch-date": "2024-01-01"
+                },
+                "nullValue": null,
+                "extraField": {
+                    "createdAt": "2025-11-15T10:00:00Z",
+                    "updatedAt": 1640995200000,
+                    "userType": "premium",
+                    "isPremiumUser": "1",
+                    "featureToggle": true,
+                    "maxItems": "25",
+                    "discountRate": "\($0 % 100)",
+                    "notificationsEnabled": "yes",
+                    "settings": {
+                        "darkMode": "on",
+                        "notifications": {
+                            "email": \($0 % 2 == 0),
+                            "push": "false"
+                        }
+                    },
+                    "versions": [1, "2", 3.5],
+                    "flags": {
+                        "beta_feature": false,
+                        "new_ui": "true",
+                        "launch-date": "2024-01-01"
+                    },
+                    "nullValue": null
+                }
             }
             """
         }.joined(separator: ",\n")
