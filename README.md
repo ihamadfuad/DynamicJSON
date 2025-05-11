@@ -103,36 +103,40 @@ import DynamicJSON
 ```
 
 ```swift
-let json = try JSONDecoder().decode(DynamicJSON.self, from: jsonData)
+do {
+    let json = try JSONDecoder().decode(DynamicJSON.self, from: jsonData)
 
-let isEnabled = json.featureToggle.bool                  // true
-let maxItems = json["maxItems"].int                      // 25
-let discount = json.discountRate.double                  // 12.5
-let launch = json.launchDate.as(Date.self)               // 2025-01-01
+    let isEnabled = json.featureToggle.bool                  // true
+    let maxItems = json["maxItems"].int                      // 25
+    let discount = json.discountRate.double                  // 12.5
+    let launch = json.launchDate.as(Date.self)               // 2025-01-01
 
-let emailOn = json.settings.notifications.email.bool     // true
-let pushOn = json["settings.notifications.push"].bool    // false
+    let emailOn = json.settings.notifications.email.bool     // true
+    let pushOn = json["settings.notifications.push"].bool    // false
+} catch {
+    print("Failed to decode JSON: \(error)")
+}
 ```
 
 ## 🧠 Smart Key Matching
 
 DynamicJSON will normalize and match keys like:
-    •    "FeatureToggle" → "feature_toggle"
-    •    "darkMode" → "dark_mode"
-    •    "beta-feature-x" → "beta_feature_x"
-    •    "FEATURETOGGLE" → "feature_toggle"
-    •    "featurTogle" → fuzzy match → "feature_toggle"
+•    "FeatureToggle" → "feature_toggle"
+•    "darkMode" → "dark_mode"
+•    "beta-feature-x" → "beta_feature_x"
+•    "FEATURETOGGLE" → "feature_toggle"
+•    "featurTogle" → fuzzy match → "feature_toggle"
  
 📅 Date Parsing
 
 Supports:
-    •    2024-01-01T12:34:56Z
-    •    2024-01-01T12:34:56.123Z
-    •    2024-01-01 12:34:56
-    •    2024-01-01
-    •    01/01/2024
-    •    01-01-2024
-    •    UNIX timestamp: 1704067200 or 1704067200000
+•    2024-01-01T12:34:56Z
+•    2024-01-01T12:34:56.123Z
+•    2024-01-01 12:34:56
+•    2024-01-01
+•    01/01/2024
+•    01-01-2024
+•    UNIX timestamp & with milisoconds: 1704067200 or 1704067200000
  
 ## 🔬 API
 
@@ -157,8 +161,8 @@ json.isNull → Bool
 ## 🧪 Testing
 
 Includes a full real-world test case covering:
-    •    All primitive types
-    •    Arrays and nested keys
-    •    Date strings and timestamps
-    •    Fuzzy and normalized keys
-    •    Null and missing key handling
+•    All primitive types
+•    Arrays and nested keys
+•    Date strings and timestamps
+•    Fuzzy and normalized keys
+•    Null and missing key handling
