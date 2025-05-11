@@ -149,9 +149,9 @@ public enum DynamicJSON: Decodable {
                 return intVal
             } else if let doubleVal = Double(str) {
                 return Int(doubleVal)
-            } else if ["true", "yes", "on"].contains(str.lowercased()) {
+            } else if ["1", "true", "yes", "on", "enabled", "active", "authorized", "valid"].contains(str.lowercased()) {
                 return 1
-            } else if ["false", "no", "off"].contains(str.lowercased()) {
+            } else if ["0", "false", "no", "off", "disabled", "inactive", "unauthorized", "invalid"].contains(str.lowercased()) {
                 return 0
             }
             return nil
@@ -170,9 +170,9 @@ public enum DynamicJSON: Decodable {
                 return doubleVal
             } else if let intVal = Int(str) {
                 return Double(intVal)
-            } else if ["true", "yes", "on"].contains(str.lowercased()) {
+            } else if ["1", "true", "yes", "on", "enabled", "active", "authorized", "valid"].contains(str.lowercased()) {
                 return 1.0
-            } else if ["false", "no", "off"].contains(str.lowercased()) {
+            } else if ["0", "false", "no", "off", "disabled", "inactive", "unauthorized", "invalid"].contains(str.lowercased()) {
                 return 0.0
             }
             return nil
